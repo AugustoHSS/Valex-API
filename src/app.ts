@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import cors from 'cors';
 import express, {
   json, NextFunction, Request, Response,
@@ -10,9 +11,20 @@ app.use(json());
 app.use(cors());
 app.use(router);
 app.use((error: any, req: Request, res: Response, next: NextFunction) => {
-  if (error.response) {
-    return res.sendStatus(error.response.status);
+  if (error.type === 'validation error') {
+    return res.status(401).send(error.message);
   }
+  if (error.type === 'not found') {
+    return res.status(404).send(error.message);
+  }
+  if (error.type === 'duplicate value') {
+    return res.status(409).send(error.message);
+  }
+  if (error.type === 'schema validate') {
+    return res.status(400).send(error.message);
+  }
+
+  console.log(error);
   return res.sendStatus(500);
 });
 
