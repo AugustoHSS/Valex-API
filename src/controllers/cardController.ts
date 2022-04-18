@@ -3,6 +3,14 @@ import * as cardService from '../services/cardService.js';
 import validApiKey from '../services/companyService.js';
 import * as employeeService from '../services/employeeService.js';
 
+export function calculateCardBalance(cardPayments:any, cardRecharges:any) {
+  let payments = 0;
+  let recharges = 0;
+  cardRecharges.forEach((amount: { amount: number; }) => { recharges += amount.amount; });
+  cardPayments.forEach((amount: { amount: number; }) => { payments += amount.amount; });
+  return recharges - payments;
+}
+
 export async function createCard(req:Request, res:Response) {
   const { employeeId, type } = req.body;
   await cardService.validIfSameTypeCard(employeeId, type);
@@ -38,15 +46,12 @@ export async function rechargeCard(req:Request, res:Response) {
 
 export async function getAllTransactions(req:Request, res:Response) {
   const { cardId } = req.params;
-  let balance = 0;
-  let debit = 0;
   await cardService.validIfCardExist(parseInt(cardId, 10));
   const cardPayments = await cardService.getCardPayments(parseInt(cardId, 10));
   const cardRecharges = await cardService.getCardRecharges(parseInt(cardId, 10));
-  cardRecharges.forEach((amount) => { balance += amount.amount; });
-  cardPayments.forEach((amount) => { debit += amount.amount; });
+  const balance = calculateCardBalance(cardPayments, cardRecharges);
   res.status(200).send({
-    balance: balance - debit,
+    balance,
     transactions: cardPayments,
     recharges: cardRecharges,
   });

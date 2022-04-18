@@ -60,9 +60,13 @@ export async function validIfCardIsNotExpired(expirationDate:string) {
 }
 
 export async function validIfCardIsActive(card:any) {
-  console.log(card.password);
   if (card.password) {
     throw { message: 'card already active', type: 'declined' };
+  }
+}
+export async function validIfCardIsNotActive(card:any) {
+  if (!card.password) {
+    throw { message: 'inactive card', type: 'declined' };
   }
 }
 
@@ -88,4 +92,10 @@ export async function getCardPayments(cardId: number) {
 
 export async function getCardRecharges(cardId: number) {
   return cardRepository.getCardRecharges(cardId);
+}
+
+export async function ValidatePassword(password:string, hashedPassword:string) {
+  if (!compareHashValue(password, hashedPassword)) {
+    throw { message: 'password invalid', type: 'declined' };
+  }
 }
