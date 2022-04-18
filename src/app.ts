@@ -23,6 +23,9 @@ app.use((error: any, req: Request, res: Response, next: NextFunction) => {
   if (error.type === 'schema validate') {
     return res.status(400).send(error.message);
   }
+  if (error.type === 'declined') {
+    return res.status(405).send(error.message);
+  }
 
   console.log(error);
   return res.sendStatus(500);

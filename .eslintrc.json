@@ -17,6 +17,7 @@
     "rules": {
         "import/extensions": "off",
         "import/no-unresolved": "off",
-        "no-throw-literal": "off"
+        "no-throw-literal": "off",
+        "import/no-extraneous-dependencies": "off"
     }
 }

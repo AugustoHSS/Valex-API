@@ -1,6 +1,6 @@
 import { faker } from '@faker-js/faker';
 import dayjs from 'dayjs';
-import { hashValue } from '../utils/hash.js';
+import { hashValue, compareHashValue } from '../utils/hash.js';
 import * as cardRepository from '../repositories/cardRepository.js';
 
 function generateHolderName(fullName:string) {
@@ -40,7 +40,39 @@ export async function createNewCard(employee: any, cardType: string) {
     isBlocked: false,
     type: cardType,
   };
-  await cardRepository.createCard(cardInformation);
+  const cardId = await cardRepository.createCard(cardInformation);
   cardInformation.securityCode = securityCode;
-  return cardInformation;
+  return { id: cardId.rows[0].id, ...cardInformation };
+}
+
+export async function validIfCardExist(cardId:number) {
+  const card = await cardRepository.searchCardById(cardId);
+  if (!card) {
+    throw { message: 'card not found', type: 'not found' };
+  }
+  return card;
+}
+
+export async function validIfCardIsNotExpired(expirationDate:string) {
+  if ((dayjs().format('MM/YYYY') > expirationDate)) {
+    throw { message: 'card expired', type: 'declined' };
+  }
+}
+
+export async function validIfCardIsActive(card:any) {
+  console.log(card.password);
+  if (card.password) {
+    throw { message: 'card already active', type: 'declined' };
+  }
+}
+
+export async function ValidateSecurityCode(securityCode:string, hashedSecurityCode:string) {
+  if (!compareHashValue(securityCode, hashedSecurityCode)) {
+    throw { message: 'security code invalid', type: 'declined' };
+  }
+}
+
+export async function ActivateCard(newPassword:string, cardId:number) {
+  const hashedPassword = hashValue(newPassword);
+  await cardRepository.activateCard(hashedPassword, cardId);
 }

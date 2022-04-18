@@ -9,11 +9,17 @@ export async function createCard(req:Request, res:Response) {
   const companyId = await validApiKey(req.headers['x-api-key']);
   const employee = await employeeService.validEmployee(employeeId, companyId);
   const newCard = await cardService.createNewCard(employee, type);
-  console.log(newCard);
+
   res.status(201).send(newCard);
 }
 
-export async function createCard2(req:Request, res:Response) {
-  const all = 123;
-  res.send(all);
+export async function activateCard(req:Request, res:Response) {
+  const { cardId, securityCode, cardPassword } = req.body;
+  const card = await cardService.validIfCardExist(cardId);
+  await cardService.validIfCardIsNotExpired(card.expirationDate);
+  await cardService.validIfCardIsActive(card);
+  await cardService.ValidateSecurityCode(securityCode, card.securityCode);
+  await cardService.ActivateCard(cardPassword, cardId);
+
+  res.sendStatus(200);
 }
