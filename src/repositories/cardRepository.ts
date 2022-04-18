@@ -25,3 +25,16 @@ export async function searchCardById(cardId: number) {
 export async function activateCard(hashedPassword: string, cardId:number) {
   await connection.query('UPDATE cards SET password=$1 WHERE id= $2', [hashedPassword, cardId]);
 }
+
+export async function rechargeCard(cardId: number, amount:number, timestamp:string) {
+  await connection.query('INSERT INTO recharges ("cardId",timestamp,amount) VALUES ($1, $2, $3)', [cardId, timestamp, amount]);
+}
+export async function getCardPayments(cardId: number) {
+  const payments = await connection.query('SELECT * FROM payments WHERE "cardId"=$1', [cardId]);
+  return payments.rows;
+}
+
+export async function getCardRecharges(cardId: number) {
+  const recharges = await connection.query('SELECT * FROM recharges WHERE "cardId"=$1', [cardId]);
+  return recharges.rows;
+}

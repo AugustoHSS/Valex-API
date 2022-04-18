@@ -76,3 +76,16 @@ export async function ActivateCard(newPassword:string, cardId:number) {
   const hashedPassword = hashValue(newPassword);
   await cardRepository.activateCard(hashedPassword, cardId);
 }
+
+export async function rechargeCard(cardId:number, amount:number) {
+  const time = dayjs().format();
+  await cardRepository.rechargeCard(cardId, amount, time);
+}
+
+export async function getCardPayments(cardId: number) {
+  return cardRepository.getCardPayments(cardId);
+}
+
+export async function getCardRecharges(cardId: number) {
+  return cardRepository.getCardRecharges(cardId);
+}

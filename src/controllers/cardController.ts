@@ -23,3 +23,31 @@ export async function activateCard(req:Request, res:Response) {
 
   res.sendStatus(200);
 }
+
+export async function rechargeCard(req:Request, res:Response) {
+  const { cardId } = req.params;
+  const { amount } = req.body;
+
+  await validApiKey(req.headers['x-api-key']);
+  const card = await cardService.validIfCardExist(parseInt(cardId, 10));
+  await cardService.validIfCardIsNotExpired(card.expirationDate);
+  await cardService.rechargeCard(parseInt(cardId, 10), amount);
+
+  res.sendStatus(200);
+}
+
+export async function getAllTransactions(req:Request, res:Response) {
+  const { cardId } = req.params;
+  let balance = 0;
+  let debit = 0;
+  await cardService.validIfCardExist(parseInt(cardId, 10));
+  const cardPayments = await cardService.getCardPayments(parseInt(cardId, 10));
+  const cardRecharges = await cardService.getCardRecharges(parseInt(cardId, 10));
+  cardRecharges.forEach((amount) => { balance += amount.amount; });
+  cardPayments.forEach((amount) => { debit += amount.amount; });
+  res.status(200).send({
+    balance: balance - debit,
+    transactions: cardPayments,
+    recharges: cardRecharges,
+  });
+}
